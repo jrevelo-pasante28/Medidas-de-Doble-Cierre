@@ -1,116 +1,491 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App Evaluación Doble Cierre</title>
-    <!-- Tailwind CSS -->
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        App Evaluación Doble Cierre
+    </title>
+
+
+    <!-- ==========================================
+         TAILWIND CSS
+    ========================================== -->
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- jsPDF -->
+
+
+    <!-- ==========================================
+         FONTAWESOME
+    ========================================== -->
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    >
+
+
+    <!-- ==========================================
+         jsPDF
+    ========================================== -->
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- jsPDF-AutoTable -->
+
+
+    <!-- ==========================================
+         jsPDF AutoTable
+    ========================================== -->
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+
+    <!-- ==========================================
+         ESTILOS
+    ========================================== -->
+
     <style>
-        #signature-pad { touch-action: none; cursor: crosshair; }
-        @media print { body > *:not(#pdf-template) { display: none; } #pdf-template { display: block !important; position: static; } }
+
+        #signature-pad {
+
+            touch-action: none;
+
+            cursor: crosshair;
+
+        }
+
+
+        @media print {
+
+            body > *:not(#pdf-template) {
+
+                display: none;
+
+            }
+
+
+            #pdf-template {
+
+                display: block !important;
+
+                position: static;
+
+            }
+
+        }
+
     </style>
+
 </head>
+
+
 <body class="bg-slate-100 text-slate-800 font-sans antialiased pb-20">
 
-    <!-- Barra de Navegación -->
-    <nav class="bg-blue-800 text-white p-4 shadow-md sticky top-0 z-50">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold"><i class="fa-solid fa-industry mr-2"></i> Reporte Doble Cierre</h1>
-            <div id="sync-status" class="text-xs font-bold bg-blue-900 px-3 py-1 rounded-full shadow-inner">
-                <i class="fa-solid fa-cloud"></i> Listo
+
+    <!-- ==========================================
+         BARRA DE NAVEGACIÓN
+    ========================================== -->
+
+    <nav
+        class="bg-blue-800 text-white p-4 shadow-md sticky top-0 z-50"
+    >
+
+        <div
+            class="container mx-auto flex justify-between items-center"
+        >
+
+            <h1 class="text-xl font-bold">
+
+                <i class="fa-solid fa-industry mr-2"></i>
+
+                Reporte Doble Cierre
+
+            </h1>
+
+
+            <div
+                id="sync-status"
+                class="text-xs font-bold bg-blue-900 px-3 py-1 rounded-full shadow-inner"
+            >
+
+                <i class="fa-solid fa-cloud"></i>
+
+                Listo
+
             </div>
+
         </div>
+
     </nav>
 
-    <main class="container mx-auto p-4 max-w-5xl mt-2 space-y-6">
-        
-        <!-- SECCIÓN 1: DATOS DE LA VISITA -->
-        <section class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-            <h2 class="text-lg font-bold mb-4 border-b-2 border-blue-100 pb-2 text-blue-800">
-                <i class="fa-solid fa-clipboard-user mr-2"></i> 1. Datos de la Visita
+
+    <!-- ==========================================
+         CONTENIDO PRINCIPAL
+    ========================================== -->
+
+    <main
+        class="container mx-auto p-4 max-w-5xl mt-2 space-y-6"
+    >
+
+
+        <!-- ==========================================
+             SECCIÓN 1
+             DATOS DE LA VISITA
+        ========================================== -->
+
+        <section
+            class="bg-white p-6 rounded-xl shadow-sm border border-slate-200"
+        >
+
+            <h2
+                class="text-lg font-bold mb-4 border-b-2 border-blue-100 pb-2 text-blue-800"
+            >
+
+                <i class="fa-solid fa-clipboard-user mr-2"></i>
+
+                1. Datos de la Visita
+
             </h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+
+            <div
+                class="grid grid-cols-1 md:grid-cols-3 gap-4"
+            >
+
+
+                <!-- FECHA -->
+
                 <div>
-                    <label class="block text-xs font-bold mb-1 text-slate-500 uppercase">Fecha</label>
-                    <input type="date" id="v-fecha" class="w-full border rounded-lg p-2 bg-slate-50 focus:ring-2 focus:ring-blue-400 outline-none transition" onchange="guardarEstado()">
+
+                    <label
+                        class="block text-xs font-bold mb-1 text-slate-500 uppercase"
+                    >
+
+                        Fecha
+
+                    </label>
+
+
+                    <input
+                        type="date"
+                        id="v-fecha"
+                        class="w-full border rounded-lg p-2 bg-slate-50 focus:ring-2 focus:ring-blue-400 outline-none transition"
+                        onchange="guardarEstado()"
+                    >
+
                 </div>
+
+
+                <!-- CLIENTE -->
+
                 <div>
-                    <label class="block text-xs font-bold mb-1 text-slate-500 uppercase">Cliente</label>
-                    <!-- Conectado al datalist de clientes -->
-                    <input type="text" id="v-cliente" list="lista-clientes" class="w-full border rounded-lg p-2 bg-slate-50 focus:ring-2 focus:ring-blue-400 outline-none transition" oninput="autoCompletarCodigoCliente()">
+
+                    <label
+                        class="block text-xs font-bold mb-1 text-slate-500 uppercase"
+                    >
+
+                        Cliente
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="v-cliente"
+                        list="lista-clientes"
+                        class="w-full border rounded-lg p-2 bg-slate-50 focus:ring-2 focus:ring-blue-400 outline-none transition"
+                        oninput="autoCompletarCodigoCliente()"
+                    >
+
                 </div>
+
+
+                <!-- CÓDIGO CLIENTE -->
+
                 <div>
-                    <label class="block text-xs font-bold mb-1 text-slate-500 uppercase">Código Cliente</label>
-                    <input type="text" id="v-codigo" class="w-full border rounded-lg p-2 bg-slate-50 focus:ring-2 focus:ring-blue-400 outline-none transition" oninput="guardarEstado()">
+
+                    <label
+                        class="block text-xs font-bold mb-1 text-slate-500 uppercase"
+                    >
+
+                        Código Cliente
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="v-codigo"
+                        class="w-full border rounded-lg p-2 bg-slate-50 focus:ring-2 focus:ring-blue-400 outline-none transition"
+                        oninput="guardarEstado()"
+                    >
+
                 </div>
+
+
+                <!-- TÉCNICO -->
+
                 <div>
-                    <label class="block text-xs font-bold mb-1 text-slate-500 uppercase">Técnico Cerradora</label>
-                    <!-- Conectado al datalist de técnicos -->
-                    <input type="text" id="v-tecnico" list="lista-tecnicos" class="w-full border rounded-lg p-2 bg-slate-50 focus:ring-2 focus:ring-blue-400 outline-none transition" oninput="guardarEstado()">
+
+                    <label
+                        class="block text-xs font-bold mb-1 text-slate-500 uppercase"
+                    >
+
+                        Técnico Cerradora
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="v-tecnico"
+                        list="lista-tecnicos"
+                        class="w-full border rounded-lg p-2 bg-slate-50 focus:ring-2 focus:ring-blue-400 outline-none transition"
+                        oninput="guardarEstado()"
+                    >
+
                 </div>
+
+
+                <!-- BITRIX -->
+
                 <div>
-                    <label class="block text-xs font-bold mb-1 text-slate-500 uppercase">Nº Negociación Bitrix</label>
-                    <input type="text" id="v-bitrix" class="w-full border rounded-lg p-2 bg-slate-50 focus:ring-2 focus:ring-blue-400 outline-none transition" oninput="guardarEstado()">
+
+                    <label
+                        class="block text-xs font-bold mb-1 text-slate-500 uppercase"
+                    >
+
+                        Nº Negociación Bitrix
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="v-bitrix"
+                        class="w-full border rounded-lg p-2 bg-slate-50 focus:ring-2 focus:ring-blue-400 outline-none transition"
+                        oninput="guardarEstado()"
+                    >
+
                 </div>
+
+
+                <!-- UNIDAD -->
+
                 <div>
-                    <label class="block text-xs font-bold mb-1 text-slate-500 uppercase">Unidad de Medida</label>
-                    <input type="text" id="v-unidad" class="w-full border rounded-lg p-2 bg-slate-50 focus:ring-2 focus:ring-blue-400 outline-none transition" placeholder="Ej. mm, pulgadas" oninput="guardarEstado()">
+
+                    <label
+                        class="block text-xs font-bold mb-1 text-slate-500 uppercase"
+                    >
+
+                        Unidad de Medida
+
+                    </label>
+
+
+                    <select
+                        id="v-unidad"
+                        class="w-full border rounded-lg p-2 bg-slate-50 focus:ring-2 focus:ring-blue-400 outline-none transition"
+                        onchange="actualizarUnidadMedida(this.value)"
+                    >
+
+                        <option value="milimetros">
+                            Milímetros
+                        </option>
+
+                        <option value="pulgadas">
+                            Pulgadas
+                        </option>
+
+                    </select>
+
                 </div>
+
+
             </div>
+
         </section>
 
-        <!-- SECCIÓN 2: INFORMES DINÁMICOS -->
-        <section class="bg-transparent space-y-6" id="informes-container">
-            <!-- Los informes y el campo "Formato" (conectado a lista-formatos) se inyectan desde app.js -->
+
+        <!-- ==========================================
+             SECCIÓN 2
+             INFORMES DINÁMICOS
+        ========================================== -->
+
+        <section
+            class="bg-transparent space-y-6"
+            id="informes-container"
+        >
+
+            <!--
+                Los informes se generan dinámicamente
+                desde app.js.
+            -->
+
         </section>
 
-        <button onclick="agregarInforme()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 px-4 rounded-xl border-2 border-dashed border-slate-400 transition shadow-sm">
-            <i class="fa-solid fa-plus-circle mr-2"></i> Añadir Nuevo Informe (Otra Línea/Máquina)
+
+        <!-- ==========================================
+             AGREGAR INFORME
+        ========================================== -->
+
+        <button
+            onclick="agregarInforme()"
+            class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 px-4 rounded-xl border-2 border-dashed border-slate-400 transition shadow-sm"
+        >
+
+            <i class="fa-solid fa-plus-circle mr-2"></i>
+
+            Añadir Nuevo Informe
+            (Otra Línea/Máquina)
+
         </button>
 
-        <!-- SECCIÓN 3: FIRMA -->
-        <section class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-            <h2 class="text-lg font-bold mb-4 border-b-2 border-blue-100 pb-2 text-blue-800">
-                <i class="fa-solid fa-file-signature mr-2"></i> 3. Firma del Cliente
+
+        <!-- ==========================================
+             SECCIÓN 3
+             FIRMA
+        ========================================== -->
+
+        <section
+            class="bg-white p-6 rounded-xl shadow-sm border border-slate-200"
+        >
+
+            <h2
+                class="text-lg font-bold mb-4 border-b-2 border-blue-100 pb-2 text-blue-800"
+            >
+
+                <i class="fa-solid fa-file-signature mr-2"></i>
+
+                3. Firma del Cliente
+
             </h2>
-            <canvas id="signature-pad" class="border-2 border-dashed border-slate-300 rounded-lg w-full h-48 bg-slate-50"></canvas>
-            <div class="flex justify-end mt-2">
-                <button onclick="limpiarFirma()" class="text-sm font-bold text-red-500 hover:text-red-700 transition">
-                    <i class="fa-solid fa-eraser"></i> Limpiar firma
+
+
+            <canvas
+                id="signature-pad"
+                class="border-2 border-dashed border-slate-300 rounded-lg w-full h-48 bg-slate-50"
+            ></canvas>
+
+
+            <div
+                class="flex justify-end mt-2"
+            >
+
+                <button
+                    onclick="limpiarFirma()"
+                    class="text-sm font-bold text-red-500 hover:text-red-700 transition"
+                >
+
+                    <i class="fa-solid fa-eraser"></i>
+
+                    Limpiar firma
+
                 </button>
+
             </div>
+
         </section>
 
-        <!-- ACCIONES FINALES -->
-        <div class="flex flex-col sm:flex-row gap-4 pt-4">
-            <!-- Botón PDF oculto temporalmente si aún no configuras la plantilla, o lo puedes dejar visible -->
-            <button onclick="generarPDF()" class="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold py-4 px-4 rounded-xl shadow-lg transition">
-                <i class="fa-solid fa-file-pdf mr-2"></i> Generar PDF(s)
+
+        <!-- ==========================================
+             ACCIONES FINALES
+        ========================================== -->
+
+        <div
+            class="flex flex-col sm:flex-row gap-4 pt-4"
+        >
+
+
+            <!-- PDF -->
+
+            <button
+                onclick="generarPDF()"
+                class="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold py-4 px-4 rounded-xl shadow-lg transition"
+            >
+
+                <i class="fa-solid fa-file-pdf mr-2"></i>
+
+                Generar PDF(s)
+
             </button>
-            <button onclick="enviarAlServidor()" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-4 rounded-xl shadow-lg transition">
-                <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Guardar Visita en Sheets
+
+
+            <!-- GUARDAR -->
+
+            <button
+                onclick="enviarAlServidor()"
+                class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-4 rounded-xl shadow-lg transition"
+            >
+
+                <i class="fa-solid fa-cloud-arrow-up mr-2"></i>
+
+                Guardar Visita en Sheets
+
             </button>
+
         </div>
 
-        <!-- LISTAS DE AUTOCOMPLETADO (DATALISTS) -->
-        <!-- Estas listas son alimentadas automáticamente por app.js desde tu Google Sheets -->
-        <datalist id="lista-clientes"></datalist>
-        <datalist id="lista-tecnicos"></datalist>
-        <datalist id="lista-formatos"></datalist>
+
+        <!-- ==========================================
+             LISTAS DE AUTOCOMPLETADO
+        ========================================== -->
+
+
+        <!-- CLIENTES -->
+
+        <datalist
+            id="lista-clientes"
+        ></datalist>
+
+
+        <!-- TECNICOS -->
+
+        <datalist
+            id="lista-tecnicos"
+        ></datalist>
+
+
+        <!-- FORMATOS CUERPO -->
+
+        <datalist
+            id="lista-formatos-cuerpo"
+        ></datalist>
+
+
+        <!-- FORMATOS TAPA -->
+
+        <datalist
+            id="lista-formatos-tapa"
+        ></datalist>
+
 
     </main>
 
-    <!-- Contenedor oculto para la generación de PDFs -->
-    <div id="pdf-template" style="display: none;"></div>
-    
-    <!-- Script Principal -->
+
+    <!-- ==========================================
+         CONTENEDOR PDF
+    ========================================== -->
+
+    <div
+        id="pdf-template"
+        style="display: none;"
+    ></div>
+
+
+    <!-- ==========================================
+         SCRIPT PRINCIPAL
+    ========================================== -->
+
     <script src="app.js"></script>
+
+
 </body>
+
 </html>
