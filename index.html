@@ -350,47 +350,38 @@
 
         <!-- ==========================================
              SECCIÓN 3
-             FIRMA
+             FIRMAS
         ========================================== -->
 
-        <section
-            class="bg-white p-6 rounded-xl shadow-sm border border-slate-200"
-        >
-
-            <h2
-                class="text-lg font-bold mb-4 border-b-2 border-blue-100 pb-2 text-blue-800"
-            >
-
+        <section class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+            <h2 class="text-lg font-bold mb-4 border-b-2 border-blue-100 pb-2 text-blue-800">
                 <i class="fa-solid fa-file-signature mr-2"></i>
-
-                3. Firma del Cliente
-
+                3. Firmas de Conformidad
             </h2>
 
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- FIRMA CLIENTE -->
+                <div>
+                    <label class="block text-xs font-bold mb-2 text-slate-600 uppercase">Firma del Cliente</label>
+                    <canvas id="signature-pad-cliente" class="border-2 border-dashed border-slate-300 rounded-lg w-full h-40 bg-slate-50"></canvas>
+                    <div class="flex justify-end mt-1">
+                        <button onclick="limpiarFirma('cliente')" class="text-xs font-bold text-red-500 hover:text-red-700 transition">
+                            <i class="fa-solid fa-eraser mr-1"></i> Limpiar firma cliente
+                        </button>
+                    </div>
+                </div>
 
-            <canvas
-                id="signature-pad"
-                class="border-2 border-dashed border-slate-300 rounded-lg w-full h-48 bg-slate-50"
-            ></canvas>
-
-
-            <div
-                class="flex justify-end mt-2"
-            >
-
-                <button
-                    onclick="limpiarFirma()"
-                    class="text-sm font-bold text-red-500 hover:text-red-700 transition"
-                >
-
-                    <i class="fa-solid fa-eraser"></i>
-
-                    Limpiar firma
-
-                </button>
-
+                <!-- FIRMA TÉCNICO -->
+                <div>
+                    <label class="block text-xs font-bold mb-2 text-slate-600 uppercase">Firma del Técnico</label>
+                    <canvas id="signature-pad-tecnico" class="border-2 border-dashed border-slate-300 rounded-lg w-full h-40 bg-slate-50"></canvas>
+                    <div class="flex justify-end mt-1">
+                        <button onclick="limpiarFirma('tecnico')" class="text-xs font-bold text-red-500 hover:text-red-700 transition">
+                            <i class="fa-solid fa-eraser mr-1"></i> Limpiar firma técnico
+                        </button>
+                    </div>
+                </div>
             </div>
-
         </section>
 
 

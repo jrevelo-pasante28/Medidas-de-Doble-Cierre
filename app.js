@@ -8,7 +8,9 @@ function generarID() {
 let estado = {
     visita: { id_visita: generarID(), fecha: '', cliente: '', codigo: '', tecnico: '', bitrix: '', unidad: 'milimetros', producto: '' },
     informes: [],
-    firmaBase64: ''
+    firmaBase64: '',
+    firmaClienteBase64: '',
+    firmaTecnicoBase64: ''
 };
 
 let baseClientes = [];
@@ -310,45 +312,86 @@ function renderizarFilaCabezal(i, c, m) {
 let canvas, ctx;
 
 function initFirma() {
-    canvas = document.getElementById('signature-pad');
-    ctx = canvas.getContext('2d');
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.strokeStyle = '#000';
+    const firmas = [
+        document.getElementById('signature-pad'),
+        document.getElementById('signature-pad-cliente'),
+        document.getElementById('signature-pad-tecnico')
+    ].filter(Boolean);
 
-    let dibujando = false;
-    const start = (e) => { e.preventDefault(); dibujando = true; draw(e); };
-    const end = () => { dibujando = false; ctx.beginPath(); estado.firmaBase64 = canvas.toDataURL(); guardarEstado(); };
-    const draw = (e) => {
-        if (!dibujando) return;
-        let cX = e.clientX || e.touches[0].clientX;
-        let cY = e.clientY || e.touches[0].clientY;
-        const rect = canvas.getBoundingClientRect();
-        ctx.lineTo(cX - rect.left, cY - rect.top);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(cX - rect.left, cY - rect.top);
-    };
+    firmas.forEach((canvasActual) => {
+        const ctxActual = canvasActual.getContext('2d');
+        canvasActual.width = canvasActual.offsetWidth || 300;
+        canvasActual.height = canvasActual.offsetHeight || 160;
+        ctxActual.lineWidth = 2;
+        ctxActual.lineCap = 'round';
+        ctxActual.strokeStyle = '#000';
 
-    canvas.addEventListener('mousedown', start);
-    canvas.addEventListener('mouseup', end);
-    canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('touchstart', start);
-    canvas.addEventListener('touchend', end);
-    canvas.addEventListener('touchmove', draw);
+        let dibujando = false;
+        const start = (e) => { e.preventDefault(); dibujando = true; draw(e); };
+        const end = () => {
+            dibujando = false;
+            ctxActual.beginPath();
+            if (canvasActual.id === 'signature-pad-cliente') {
+                estado.firmaClienteBase64 = canvasActual.toDataURL();
+            } else if (canvasActual.id === 'signature-pad-tecnico') {
+                estado.firmaTecnicoBase64 = canvasActual.toDataURL();
+            } else {
+                estado.firmaBase64 = canvasActual.toDataURL();
+            }
+            guardarEstado();
+        };
+        const draw = (e) => {
+            if (!dibujando) return;
+            const rect = canvasActual.getBoundingClientRect();
+            const clientX = e.clientX ?? (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+            const clientY = e.clientY ?? (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+            ctxActual.lineTo(clientX - rect.left, clientY - rect.top);
+            ctxActual.stroke();
+            ctxActual.beginPath();
+            ctxActual.moveTo(clientX - rect.left, clientY - rect.top);
+        };
 
-    if (estado.firmaBase64) {
-        let img = new Image();
-        img.onload = () => ctx.drawImage(img, 0, 0);
-        img.src = estado.firmaBase64;
-    }
+        canvasActual.addEventListener('mousedown', start);
+        canvasActual.addEventListener('mouseup', end);
+        canvasActual.addEventListener('mousemove', draw);
+        canvasActual.addEventListener('touchstart', start);
+        canvasActual.addEventListener('touchend', end);
+        canvasActual.addEventListener('touchmove', draw);
+
+        const firmaGuardada = canvasActual.id === 'signature-pad-cliente'
+            ? estado.firmaClienteBase64
+            : canvasActual.id === 'signature-pad-tecnico'
+                ? estado.firmaTecnicoBase64
+                : estado.firmaBase64;
+
+        if (firmaGuardada) {
+            const img = new Image();
+            img.onload = () => ctxActual.drawImage(img, 0, 0);
+            img.src = firmaGuardada;
+        }
+    });
 }
 
-function limpiarFirma() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    estado.firmaBase64 = '';
+function limpiarFirma(tipo = 'cliente') {
+    const canvasAntiguo = document.getElementById('signature-pad');
+    const canvasCliente = document.getElementById('signature-pad-cliente');
+    const canvasTecnico = document.getElementById('signature-pad-tecnico');
+
+    const canvasObjetivo = tipo === 'tecnico' ? canvasTecnico : (canvasCliente || canvasAntiguo);
+    const ctxObjetivo = canvasObjetivo?.getContext('2d');
+
+    if (!canvasObjetivo || !ctxObjetivo) return;
+
+    ctxObjetivo.clearRect(0, 0, canvasObjetivo.width, canvasObjetivo.height);
+
+    if (canvasObjetivo.id === 'signature-pad-cliente') {
+        estado.firmaClienteBase64 = '';
+    } else if (canvasObjetivo.id === 'signature-pad-tecnico') {
+        estado.firmaTecnicoBase64 = '';
+    } else {
+        estado.firmaBase64 = '';
+    }
+
     guardarEstado();
 }
 
@@ -374,6 +417,8 @@ async function enviarAlServidor() {
         estado.visita.producto = '';
         estado.informes = [];
         estado.firmaBase64 = '';
+        estado.firmaClienteBase64 = '';
+        estado.firmaTecnicoBase64 = '';
 
         document.getElementById('v-fecha').value = '';
         document.getElementById('v-cliente').value = '';
@@ -388,6 +433,55 @@ async function enviarAlServidor() {
     } catch (e) {
         alert("Error de red. Datos guardados localmente.");
     }
+}
+
+async function cargarImagenComoDataURL(ruta) {
+    try {
+        const respuesta = await fetch(ruta);
+        if (!respuesta.ok) throw new Error(`No se pudo cargar la imagen: ${ruta}`);
+
+        const blob = await respuesta.blob();
+        return await new Promise((resolve, reject) => {
+            const lector = new FileReader();
+            lector.onloadend = () => resolve(lector.result);
+            lector.onerror = reject;
+            lector.readAsDataURL(blob);
+        });
+    } catch (error) {
+        console.warn('No se pudo cargar la imagen del PDF:', ruta, error);
+        return '';
+    }
+}
+
+function normalizarNombreTecnico(valor) {
+    return String(valor || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+async function obtenerLogoTecnicoPorNombre(tecnico) {
+    const nombre = normalizarNombreTecnico(tecnico);
+
+    const mapa = {
+        'alvaro gamboa': 'Imagenes/Logo-Firma-Alvaro.png',
+        'alvara gambo': 'Imagenes/Logo-Firma-Alvaro.png',
+        'alvaro gambo': 'Imagenes/Logo-Firma-Alvaro.png',
+        'danilo bermeo': 'Imagenes/Logo-Firma-Danilo.png',
+        'robinson villao': 'Imagenes/Logo-Firma-Robinson.png',
+        'robinzon villao': 'Imagenes/Logo-Firma-Robinson.png',
+        'pomerio gilces': 'Imagenes/Logo-Firma-Pomerio.png'
+    };
+
+    const ruta = mapa[nombre];
+    if (!ruta) {
+        console.warn('No existe una firma asociada para el técnico:', tecnico);
+        return '';
+    }
+
+    return cargarImagenComoDataURL(ruta);
 }
 
 // === GENERACIÓN DE PDF CON jsPDF + AUTOTABLE ===
@@ -414,19 +508,37 @@ async function generarPDF() {
     try {
         const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
         const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
         const marginX = 8;
+        const logoFadesaSrc = await cargarImagenComoDataURL('Imagenes/LOGO2-02.png');
+        const logoTecnicoSrc = await obtenerLogoTecnicoPorNombre(estado.visita?.tecnico);
 
         estado.informes.forEach((informe, idx) => {
             if (idx > 0) doc.addPage();
 
+            if (logoFadesaSrc) {
+                try {
+                    doc.addImage(logoFadesaSrc, 'PNG', marginX + 2, 5, 34, 14);
+                } catch (imgErr) {
+                    console.warn('No se pudo insertar el logo del PDF:', imgErr);
+                }
+            }
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(10);
+            doc.setDrawColor(180, 190, 205);
+            doc.setFillColor(245, 248, 252);
+            doc.roundedRect(pageWidth - 38, 8, 30, 7, 1.5, 1.5, 'F');
+            doc.text('FVE-002', pageWidth - 22, 13, { align: 'right' });
+
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(14);
-            doc.text('Reporte Final de Evaluación de Doble Cierre', pageWidth / 2, 12, { align: 'center' });
+            doc.text('Reporte Final de Evaluación de Doble Cierre', pageWidth / 2, 20, { align: 'center' });
 
             const col1X = marginX;
             const col2X = pageWidth / 3 + 5;
             const col3X = (pageWidth / 3) * 2 + 5;
-            let y = 20;
+            let y = 30;
 
             doc.setFontSize(9);
 
@@ -491,24 +603,59 @@ async function generarPDF() {
                 columnStyles: { 0: { fontStyle: 'bold', fillColor: [241, 241, 241] } }
             });
 
-            const finalY = doc.lastAutoTable.finalY + 15;
-            const firmaSrc = typeof estado.firmaBase64 === 'string' && estado.firmaBase64.startsWith('data:image') ? estado.firmaBase64 : '';
+            const finalY = doc.lastAutoTable.finalY + 18;
+            const firmaClienteSrc = typeof estado.firmaClienteBase64 === 'string' && estado.firmaClienteBase64.startsWith('data:image')
+                ? estado.firmaClienteBase64
+                : (typeof estado.firmaBase64 === 'string' && estado.firmaBase64.startsWith('data:image') ? estado.firmaBase64 : '');
+            const firmaTecnicoSrc = typeof estado.firmaTecnicoBase64 === 'string' && estado.firmaTecnicoBase64.startsWith('data:image') ? estado.firmaTecnicoBase64 : '';
 
-            if (firmaSrc) {
-                const imgW = 55, imgH = 22, imgX = pageWidth / 2 - imgW / 2;
+            const firmaW = 52;
+            const firmaH = 20;
+            const firmaClienteX = pageWidth / 4 - firmaW / 2;
+            const firmaTecnicoX = (pageWidth * 3) / 4 - firmaW / 2;
+
+            if (firmaClienteSrc) {
                 try {
-                    doc.addImage(firmaSrc, 'PNG', imgX, finalY, imgW, imgH);
-                    doc.line(imgX, finalY + imgH + 1, imgX + imgW, finalY + imgH + 1);
+                    doc.addImage(firmaClienteSrc, 'PNG', firmaClienteX, finalY, firmaW, firmaH);
+                    doc.line(firmaClienteX, finalY + firmaH + 1, firmaClienteX + firmaW, finalY + firmaH + 1);
                 } catch (imgErr) {
-                    console.warn('No se pudo insertar la firma:', imgErr);
+                    console.warn('No se pudo insertar la firma del cliente:', imgErr);
                 }
             } else {
-                doc.line(pageWidth / 2 - 30, finalY + 15, pageWidth / 2 + 30, finalY + 15);
+                doc.line(pageWidth / 4 - 24, finalY + 15, pageWidth / 4 + 24, finalY + 15);
+            }
+
+            if (firmaTecnicoSrc) {
+                try {
+                    doc.addImage(firmaTecnicoSrc, 'PNG', firmaTecnicoX, finalY, firmaW, firmaH);
+                    doc.line(firmaTecnicoX, finalY + firmaH + 1, firmaTecnicoX + firmaW, finalY + firmaH + 1);
+                } catch (imgErr) {
+                    console.warn('No se pudo insertar la firma del técnico:', imgErr);
+                }
+            } else {
+                doc.line((pageWidth * 3) / 4 - 24, finalY + 15, (pageWidth * 3) / 4 + 24, finalY + 15);
             }
 
             doc.setFontSize(9);
             doc.setFont('helvetica', 'bold');
-            doc.text('Firma del Cliente', pageWidth / 2, finalY + 27, { align: 'center' });
+            doc.text('Firma del Cliente', pageWidth / 4, finalY + 27, { align: 'center' });
+            doc.text('Firma del Técnico', (pageWidth * 3) / 4, finalY + 27, { align: 'center' });
+            doc.setDrawColor(210, 217, 228);
+            doc.line(pageWidth / 4 - 20, finalY + 30, pageWidth / 4 + 20, finalY + 30);
+            doc.line((pageWidth * 3) / 4 - 20, finalY + 30, (pageWidth * 3) / 4 + 20, finalY + 30);
+
+            if (logoTecnicoSrc) {
+                const logoTecnicoW = 50;
+                const logoTecnicoH = 28;
+                const logoTecnicoX = pageWidth - marginX - logoTecnicoW;
+                const logoTecnicoY = pageHeight - 18 - logoTecnicoH;
+
+                try {
+                    doc.addImage(logoTecnicoSrc, 'PNG', logoTecnicoX, logoTecnicoY, logoTecnicoW, logoTecnicoH);
+                } catch (imgErr) {
+                    console.warn('No se pudo insertar la firma del técnico en la esquina inferior derecha:', imgErr);
+                }
+            }
         });
 
         const cliente = String(estado.visita?.cliente || 'General').replace(/[\\/:*?"<>|]/g, '_').trim();
