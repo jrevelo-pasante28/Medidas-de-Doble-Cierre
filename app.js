@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbxTsbSScWMDv5-M3k_z2xzlIHg4oiFT-NamiogDdShsZ6IctsL9dnfYLpyXWXsY_aKs/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzO4O_WJA8N_-_X0kzU2c7IEB-8yEJvOgybyqpaad0tUGeZHf_F0aUEf4fUdmeu1lPA/exec";
 
 // === VARIABLES GLOBALES Y ESTADO ===
 function generarID() {
@@ -6,7 +6,7 @@ function generarID() {
 }
 
 let estado = {
-    visita: { id_visita: generarID(), fecha: '', cliente: '', codigo: '', tecnico: '', bitrix: '', unidad: 'milimetros', producto: '' },
+    visita: { id_visita: generarID(), fecha: '', cliente: '', codigo: '', tecnico: '', bitrix: '', unidad: 'milimetros', producto: '', sustrato_tapa: '', proveedor_tapa: '' },
     informes: [],
     firmaBase64: '',
     firmaClienteBase64: '',
@@ -35,6 +35,8 @@ function guardarEstado() {
     estado.visita.tecnico = document.getElementById('v-tecnico').value;
     estado.visita.bitrix = document.getElementById('v-bitrix').value;
     estado.visita.unidad = document.getElementById('v-unidad').value;
+    estado.visita.sustrato_tapa = document.getElementById('v-sustrato-tapa').value;
+    estado.visita.proveedor_tapa = document.getElementById('v-proveedor-tapa').value;
 
     if (estado.informes.length > 0) {
         estado.visita.producto = estado.informes[0].producto || '';
@@ -53,6 +55,8 @@ function cargarEstado() {
 
         estado.visita.unidad = estado.visita.unidad || 'milimetros';
         estado.visita.producto = estado.visita.producto || '';
+        estado.visita.sustrato_tapa = estado.visita.sustrato_tapa || '';
+        estado.visita.proveedor_tapa = estado.visita.proveedor_tapa || '';
         estado.informes = Array.isArray(estado.informes) ? estado.informes : [];
 
         estado.informes.forEach(informe => {
@@ -68,6 +72,8 @@ function cargarEstado() {
         document.getElementById('v-tecnico').value = estado.visita.tecnico || '';
         document.getElementById('v-bitrix').value = estado.visita.bitrix || '';
         document.getElementById('v-unidad').value = estado.visita.unidad || 'milimetros';
+        document.getElementById('v-sustrato-tapa').value = estado.visita.sustrato_tapa || '';
+        document.getElementById('v-proveedor-tapa').value = estado.visita.proveedor_tapa || '';
     } catch (error) {
         console.error("Error cargando estado local:", error);
     }
@@ -404,8 +410,13 @@ async function enviarAlServidor() {
         if (estado.informes.length > 0) estado.visita.producto = estado.informes[0].producto || '';
         guardarEstado();
 
+        const datosParaEnviar = {
+            ...estado,
+            firmaBase64: estado.firmaClienteBase64 || estado.firmaBase64
+        };
+
         await fetch(API_URL, {
-            method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(estado)
+            method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(datosParaEnviar)
         });
 
         btn.innerHTML = '<i class="fa-solid fa-check"></i> OK';
@@ -425,6 +436,8 @@ async function enviarAlServidor() {
         document.getElementById('v-codigo').value = '';
         document.getElementById('v-tecnico').value = '';
         document.getElementById('v-bitrix').value = '';
+        document.getElementById('v-sustrato-tapa').value = '';
+        document.getElementById('v-proveedor-tapa').value = '';
 
         limpiarFirma();
         agregarInforme();
