@@ -127,6 +127,26 @@ function inicializarListas() {
             listTecnicos.appendChild(option);
         });
     }
+
+    const listFormatosCuerpo = document.getElementById('lista-formatos-cuerpo');
+    if (listFormatosCuerpo) {
+        listFormatosCuerpo.innerHTML = '';
+        baseFormatosCuerpo.forEach(formato => {
+            const option = document.createElement('option');
+            option.value = formato;
+            listFormatosCuerpo.appendChild(option);
+        });
+    }
+
+    const listFormatosTapa = document.getElementById('lista-formatos-tapa');
+    if (listFormatosTapa) {
+        listFormatosTapa.innerHTML = '';
+        baseFormatosTapa.forEach(formato => {
+            const option = document.createElement('option');
+            option.value = formato;
+            listFormatosTapa.appendChild(option);
+        });
+    }
 }
 
 function autoCompletarCodigoCliente() {
@@ -247,20 +267,16 @@ function renderizarInformes() {
             </div>
 
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-6 bg-slate-50 p-4 rounded-lg border">
-                <div><label class="text-xs font-bold text-slate-500 uppercase">Línea</label><input type="text" value="${escaparHTML(informe.linea)}" oninput="actualizarCampoInfo(${i}, 'linea', this.value)" class="w-full border p-2 rounded"></div>
-                <div><label class="text-xs font-bold text-slate-500 uppercase">Cerradora</label><input type="text" value="${escaparHTML(informe.maquina)}" oninput="actualizarCampoInfo(${i}, 'maquina', this.value)" class="w-full border p-2 rounded"></div>
-                <div><label class="text-xs font-bold text-slate-500 uppercase">Espesor Tapa</label><input type="number" step="0.001" value="${escaparHTML(informe.espesor_tapa)}" oninput="actualizarCampoInfo(${i}, 'espesor_tapa', this.value)" class="w-full border p-2 rounded focus:ring-1 focus:ring-blue-400"></div>
-                <div><label class="text-xs font-bold text-slate-500 uppercase">Espesor Cuerpo</label><input type="number" step="0.001" value="${escaparHTML(informe.espesor_cuerpo)}" oninput="actualizarCampoInfo(${i}, 'espesor_cuerpo', this.value)" class="w-full border p-2 rounded focus:ring-1 focus:ring-blue-400"></div>
-                <div><label class="text-xs font-bold text-slate-500 uppercase">Producto</label><input type="text" value="${escaparHTML(informe.producto)}" oninput="actualizarCampoInfo(${i}, 'producto', this.value)" class="w-full border p-2 rounded"></div>
+                <div><label class="text-xs font-bold text-slate-500 uppercase">Línea</label><input id="informe-${i}-linea" type="text" value="${escaparHTML(informe.linea)}" oninput="actualizarCampoInfo(${i}, 'linea', this.value)" class="w-full border p-2 rounded"></div>
+                <div><label class="text-xs font-bold text-slate-500 uppercase">Cerradora</label><input id="informe-${i}-maquina" type="text" value="${escaparHTML(informe.maquina)}" oninput="actualizarCampoInfo(${i}, 'maquina', this.value)" class="w-full border p-2 rounded"></div>
+                <div><label class="text-xs font-bold text-slate-500 uppercase">Espesor Tapa</label><input id="informe-${i}-espesor-tapa" type="number" step="0.001" value="${escaparHTML(informe.espesor_tapa)}" oninput="actualizarCampoInfo(${i}, 'espesor_tapa', this.value)" class="w-full border p-2 rounded focus:ring-1 focus:ring-blue-400"></div>
+                <div><label class="text-xs font-bold text-slate-500 uppercase">Espesor Cuerpo</label><input id="informe-${i}-espesor-cuerpo" type="number" step="0.001" value="${escaparHTML(informe.espesor_cuerpo)}" oninput="actualizarCampoInfo(${i}, 'espesor_cuerpo', this.value)" class="w-full border p-2 rounded focus:ring-1 focus:ring-blue-400"></div>
+                <div><label class="text-xs font-bold text-slate-500 uppercase">Producto</label><input id="informe-${i}-producto" type="text" value="${escaparHTML(informe.producto)}" oninput="actualizarCampoInfo(${i}, 'producto', this.value)" class="w-full border p-2 rounded"></div>
                 <div><label class="text-xs font-bold text-slate-500 uppercase">Formato Cuerpo</label>
-                    <select onchange="actualizarCampoInfo(${i}, 'formato_cuerpo', this.value)" class="w-full border p-3 rounded bg-white focus:ring-1 focus:ring-blue-400">
-                        ${crearOpcionesFormato(baseFormatosCuerpo, informe.formato_cuerpo)}
-                    </select>
+                    <input id="informe-${i}-formato-cuerpo" type="text" list="lista-formatos-cuerpo" value="${escaparHTML(informe.formato_cuerpo)}" oninput="actualizarCampoInfo(${i}, 'formato_cuerpo', this.value)" class="w-full border p-2 rounded bg-white focus:ring-1 focus:ring-blue-400">
                 </div>
                 <div><label class="text-xs font-bold text-slate-500 uppercase">Formato Tapa</label>
-                    <select onchange="actualizarCampoInfo(${i}, 'formato_tapa', this.value)" class="w-full border p-3 rounded bg-white focus:ring-1 focus:ring-blue-400">
-                        ${crearOpcionesFormato(baseFormatosTapa, informe.formato_tapa)}
-                    </select>
+                    <input id="informe-${i}-formato-tapa" type="text" list="lista-formatos-tapa" value="${escaparHTML(informe.formato_tapa)}" oninput="actualizarCampoInfo(${i}, 'formato_tapa', this.value)" class="w-full border p-2 rounded bg-white focus:ring-1 focus:ring-blue-400">
                 </div>
             </div>
 
@@ -275,6 +291,29 @@ function renderizarInformes() {
         </div>`;
     });
     container.innerHTML = html;
+}
+
+function sincronizarInformesDesdeFormulario() {
+    estado.informes.forEach((informe, indice) => {
+        const campos = {
+            linea: `informe-${indice}-linea`,
+            maquina: `informe-${indice}-maquina`,
+            espesor_tapa: `informe-${indice}-espesor-tapa`,
+            espesor_cuerpo: `informe-${indice}-espesor-cuerpo`,
+            producto: `informe-${indice}-producto`,
+            formato_cuerpo: `informe-${indice}-formato-cuerpo`,
+            formato_tapa: `informe-${indice}-formato-tapa`
+        };
+
+        Object.entries(campos).forEach(([campo, id]) => {
+            const elemento = document.getElementById(id);
+            if (elemento) informe[campo] = elemento.value;
+        });
+    });
+
+    if (estado.informes.length > 0) {
+        estado.visita.producto = estado.informes[0].producto || '';
+    }
 }
 
 function renderizarFilaCabezal(i, c, m) {
@@ -504,6 +543,9 @@ async function obtenerLogoTecnicoPorNombre(tecnico) {
 // === GENERACIÓN DE PDF CON jsPDF + AUTOTABLE ===
 async function generarPDF() {
     const pdfButton = document.querySelector('button[onclick*="generarPDF"]');
+
+    sincronizarInformesDesdeFormulario();
+    guardarEstado();
     
     if (!Array.isArray(estado.informes) || estado.informes.length === 0) {
         alert('Debes agregar al menos un informe para generar el PDF.');
@@ -585,6 +627,10 @@ async function generarPDF() {
             campo('ESP. CUERPO:', informe.espesor_cuerpo, col1X, y, 23);
             campo('ESP. TAPA:', informe.espesor_tapa, col2X, y, 18);
             campo('FORMATO TAPA:', informe.formato_tapa, col3X, y, 24, 56);
+            y += 8;
+
+            campo('SUSTRATO TAPA:', estado.visita?.sustrato_tapa, col1X, y, 28, 48);
+            campo('PROVEEDOR TAPA:', estado.visita?.proveedor_tapa, col2X, y, 30, 48);
 
             const mediciones = Array.isArray(informe.mediciones) ? informe.mediciones : [];
             const head = [
