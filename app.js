@@ -472,7 +472,11 @@ async function obtenerLogoTecnicoPorNombre(tecnico) {
         'danilo bermeo': 'Imagenes/Logo-Firma-Danilo.png',
         'robinson villao': 'Imagenes/Logo-Firma-Robinson.png',
         'robinzon villao': 'Imagenes/Logo-Firma-Robinson.png',
-        'pomerio gilces': 'Imagenes/Logo-Firma-Pomerio.png'
+        'pomerio gilces': 'Imagenes/Logo-Firma-Pomerio.png',
+        'pablo ruesta': 'Imagenes/Logo-Firma-Pablo.png',
+        'erick mundaca': 'Imagenes/Logo-Firma-Erick.png',
+        'jesus barreto': 'Imagenes/Logo-Firma-Jesus.png',
+        'roger diaz': 'Imagenes/Logo-Firma-Roger.png'
     };
 
     const ruta = mapa[nombre];
