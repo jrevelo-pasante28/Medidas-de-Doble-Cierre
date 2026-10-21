@@ -1,5 +1,5 @@
 const API_URL =
-  "https://script.google.com/macros/s/AKfycbzbu5ehCUrObC1gNev6tUp9VOXLBmfWRvAM9l-l3ag-pr7zs_2_2LsyVgCakt6mCOb4/exec";
+  "https://script.google.com/macros/s/AKfycbzVN5wQQpcmKsp3xX3YJTImeklaIxTLFbUcNk6JmZFuEAaswonHAM1C7AG2nZKchUjI/exec";
 
 // === VARIABLES GLOBALES Y ESTADO ===
 function generarID() {
@@ -18,6 +18,7 @@ let estado = {
     sustrato_tapa: "",
     sustrato_cuerpo: "",
     proveedor_tapa: "",
+    organizacion_de_ventas: "",
   },
   informes: [],
   firmaBase64: "",
@@ -53,6 +54,9 @@ function guardarEstado() {
     document.getElementById("v-sustrato-cuerpo")?.value || "";
   estado.visita.proveedor_tapa =
     document.getElementById("v-proveedor-tapa").value;
+  estado.visita.organizacion_de_ventas = document.getElementById(
+    "v-organizacion-ventas",
+  ).value;
 
   localStorage.setItem("dobleCierreApp2", JSON.stringify(estado));
 }
@@ -71,6 +75,8 @@ function cargarEstado() {
     estado.visita.sustrato_tapa = estado.visita.sustrato_tapa || "";
     estado.visita.sustrato_cuerpo = estado.visita.sustrato_cuerpo || "";
     estado.visita.proveedor_tapa = estado.visita.proveedor_tapa || "";
+    estado.visita.organizacion_de_ventas =
+      estado.visita.organizacion_de_ventas || "";
     estado.informes = Array.isArray(estado.informes) ? estado.informes : [];
 
     estado.informes.forEach((informe) => {
@@ -95,6 +101,8 @@ function cargarEstado() {
     }
     document.getElementById("v-proveedor-tapa").value =
       estado.visita.proveedor_tapa || "";
+    document.getElementById("v-organizacion-ventas").value =
+      estado.visita.organizacion_de_ventas || "";
   } catch (error) {
     console.error("Error cargando estado local:", error);
   }
@@ -579,10 +587,12 @@ async function enviarAlServidor() {
       document.getElementById("v-sustrato-cuerpo").value = "";
     }
     document.getElementById("v-proveedor-tapa").value = "";
+    document.getElementById("v-organizacion-ventas").value = "";
 
     estado.visita.sustrato_tapa = "";
     estado.visita.sustrato_cuerpo = "";
     estado.visita.proveedor_tapa = "";
+    estado.visita.organizacion_de_ventas = "";
     estado.visita.bitrix = "";
 
     limpiarFirma();

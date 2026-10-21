@@ -262,6 +262,27 @@
               oninput="guardarEstado()"
             />
           </div>
+
+          <!-- ORGANIZACIÓN DE VENTAS -->
+
+          <div>
+            <label
+              class="block text-xs font-bold mb-1 text-slate-500 uppercase"
+              for="v-organizacion-ventas"
+            >
+              Organización de ventas
+            </label>
+
+            <select
+              id="v-organizacion-ventas"
+              class="w-full border rounded-lg p-2 bg-slate-50 focus:ring-2 focus:ring-blue-400 outline-none transition"
+              onchange="guardarEstado()"
+            >
+              <option value="">Seleccionar organización</option>
+              <option value="Fadesa Peru">Fadesa Peru</option>
+              <option value="Fadesa Ecuador">Fadesa Ecuador</option>
+            </select>
+          </div>
         </div>
       </section>
 
